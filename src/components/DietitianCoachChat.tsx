@@ -71,6 +71,7 @@ export const DietitianCoachChat: React.FC<DietitianCoachChatProps> = ({ user, me
         }),
       });
 
+      if (!res.ok) throw new Error('API unavailable');
       const data = await res.json();
       const coachMsg: Message = {
         sender: 'coach',

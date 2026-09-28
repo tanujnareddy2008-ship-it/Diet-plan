@@ -4,7 +4,7 @@ import {
   FullHealthPlan,
   MealItem,
 } from './types/diet';
-import { buildCompleteHealthPlan } from './utils/nutritionCalculator';
+import { buildCompleteHealthPlan, getFallbackMealSwap } from './utils/nutritionCalculator';
 import { Navbar } from './components/Navbar';
 import { AssessmentForm } from './components/AssessmentForm';
 import { MetricsDashboard } from './components/MetricsDashboard';
@@ -106,6 +106,7 @@ export default function App() {
         }),
       });
 
+      if (!response.ok) throw new Error('API swap failed');
       const data = await response.json();
       if (data.meal) {
         const updatedWeekly = [...healthPlan.weeklyPlan];
@@ -120,7 +121,18 @@ export default function App() {
         });
       }
     } catch (err) {
-      console.error('Failed to swap meal:', err);
+      console.warn('Network meal swap unavailable, using local swap fallback:', err);
+      const fallbackMeal = getFallbackMealSwap(category, calories, profile.dietPreference);
+      const updatedWeekly = [...healthPlan.weeklyPlan];
+      const dayMeals = updatedWeekly[dayIndex].meals.map((m) =>
+        m.id === mealId ? fallbackMeal : m
+      );
+      updatedWeekly[dayIndex].meals = dayMeals;
+
+      setHealthPlan({
+        ...healthPlan,
+        weeklyPlan: updatedWeekly,
+      });
     } finally {
       setIsSwappingId(null);
     }

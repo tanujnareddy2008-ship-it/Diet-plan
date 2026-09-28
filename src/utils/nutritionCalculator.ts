@@ -712,3 +712,100 @@ export function buildCompleteHealthPlan(profile: UserProfile): FullHealthPlan {
     generatedAt: new Date().toISOString(),
   };
 }
+
+export function getFallbackMealSwap(
+  category: string,
+  calories: number,
+  dietPreference: string
+): MealItem {
+  const isVegan = dietPreference === 'vegan';
+  const isVeg = isVegan || dietPreference === 'vegetarian';
+
+  const fallbacks: Record<string, Partial<MealItem>> = {
+    breakfast: {
+      name: isVegan
+        ? 'Chia Seed & Plant Protein Power Bowl with Blueberries & Hemp'
+        : isVeg
+        ? 'Avocado & Free-Range Poached Egg on Seeded Sourdough with Microgreens'
+        : 'Whole-Grain Sourdough with Smoked Salmon, Poached Eggs & Avocado',
+      prepTimeMinutes: 10,
+      calories: calories || 420,
+      protein: 26,
+      carbs: 38,
+      fats: 18,
+      ingredients: ['Artisan sourdough (2 slices)', 'Pasture-raised eggs or silken tofu', 'Hass avocado (1/2)', 'Microgreens', 'Pink Himalayan salt'],
+      instructions: ['Toast sourdough to golden crunch', 'Mash avocado with lime and sea salt', 'Top with protein source and microgreens'],
+      healthBenefit: 'High bioavailable choline and omega-3s foster sustained cognitive acuity without morning glycemic volatility.',
+    },
+    morning_snack: {
+      name: 'Walnut & Wild Berry Antioxidant Satiety Bowl',
+      prepTimeMinutes: 3,
+      calories: calories || 180,
+      protein: 7,
+      carbs: 18,
+      fats: 11,
+      ingredients: ['Raw walnut halves (20g)', 'Fresh blueberries (1/2 cup)', 'Cacao nibs (1 tsp)', 'Ceylon cinnamon'],
+      instructions: ['Combine in a small bowl', 'Chew slowly and enjoy with a glass of water'],
+      healthBenefit: 'Polyphenols enhance microvascular cerebral blood flow and stabilize mid-morning dopamine.',
+    },
+    lunch: {
+      name: isVegan
+        ? 'Warm Quinoa & Herb Chickpea Bowl with Tahini Lemon Vinaigrette'
+        : isVeg
+        ? 'Grilled Halloumi & Lentil Salad with Roasted Red Peppers'
+        : 'Grilled Lemon Herb Chicken with Roasted Sweet Potato & Steamed Asparagus',
+      prepTimeMinutes: 20,
+      calories: calories || 580,
+      protein: 38,
+      carbs: 46,
+      fats: 20,
+      ingredients: ['Tender protein source (160g)', 'Cooked tricolor quinoa (1 cup)', 'Steamed green asparagus spears', 'Cold-pressed extra virgin olive oil', 'Fresh lemon juice'],
+      instructions: ['Pan-sear or bake protein with lemon and herbs', 'Plate alongside warm quinoa and asparagus', 'Drizzle with extra virgin olive oil'],
+      healthBenefit: 'Complete essential amino acid profile prevents post-lunch somnolence and supports muscle repair.',
+    },
+    afternoon_snack: {
+      name: isVegan
+        ? 'Crisp Cucumber & Bell Pepper Batons with Roasted Garlic Hummus'
+        : 'Greek Yogurt 2% with Ceylon Cinnamon & Crushed Almonds',
+      prepTimeMinutes: 4,
+      calories: calories || 190,
+      protein: 15,
+      carbs: 14,
+      fats: 7,
+      ingredients: ['Greek yogurt or almond-based yogurt (150g)', 'Ceylon cinnamon', 'Raw crushed almonds (15g)'],
+      instructions: ['Whisk cinnamon into yogurt', 'Top with crunchy crushed almonds'],
+      healthBenefit: 'Slow-digesting protein stream sustains satiety until dinner without blood sugar dips.',
+    },
+    dinner: {
+      name: isVegan
+        ? 'Creamy Coconut Red Lentil Dahl with Wilted Spinach & Basmati'
+        : isVeg
+        ? 'Roasted Portobello Mushroom Caps Stuffed with Herbed Quinoa & Goat Cheese'
+        : 'Pan-Seared Wild Salmon Fillet with Steamed Broccolini & Garlic Mash',
+      prepTimeMinutes: 25,
+      calories: calories || 510,
+      protein: 40,
+      carbs: 36,
+      fats: 18,
+      ingredients: ['Wild fish or legume base (170g)', 'Tender broccolini spears', 'Cauliflower or sweet potato mash', 'Garlic cloves', 'Olive oil & fresh dill'],
+      instructions: ['Cook protein gently on medium heat until tender', 'Steam greens for 4 minutes to preserve vibrant chlorophyll', 'Plate together and finish with herbs'],
+      healthBenefit: 'Easily digestible proteins and magnesium ease the body into parasympathetic restorative sleep.',
+    },
+  };
+
+  const selected = fallbacks[category] || fallbacks.lunch;
+  return {
+    id: 'swap-' + Date.now(),
+    name: selected.name!,
+    category: category as any,
+    time: '12:30',
+    calories: selected.calories || calories,
+    protein: selected.protein || 30,
+    carbs: selected.carbs || 40,
+    fats: selected.fats || 15,
+    prepTimeMinutes: selected.prepTimeMinutes || 15,
+    ingredients: selected.ingredients || [],
+    instructions: selected.instructions || [],
+    healthBenefit: selected.healthBenefit || 'Nutrient-dense whole-food balance supporting metabolic homeostasis.',
+  };
+}
